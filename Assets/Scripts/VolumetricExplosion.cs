@@ -14,7 +14,7 @@ public class VolumetricExplosion : MonoBehaviour {
 	public AnimationCurve displacement = AnimationCurve.Linear(0, 0, 1, 0.5f);
 //	[Range (0.0f, 1.0f)] public float displacementVariation = 0.1f;
 	public AnimationCurve displacementTileY = AnimationCurve.Linear(0, 0, 1, 1);
-	public AnimationCurve minRange = AnimationCurve.Linear(0, 0, 1, 0.5f);
+//	public AnimationCurve minRange = AnimationCurve.Linear(0, 0, 1, 0.5f);
 	public AnimationCurve maxRange = AnimationCurve.Linear(0, 0.2f, 1, 1);
 //	[Range (0.0f, 1.0f)] public float rangeVariation = 0.1f;
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
@@ -42,19 +42,19 @@ public class VolumetricExplosion : MonoBehaviour {
 	public bool debugPos = false;
 	public bool loop = false;
 
-//	private float newVariation;
+	private float newVariation;
 
+	private float newExplosionDuration;
 //	private float newDurationVariation;
-//	private float newExplosionDuration;
 //	private float newScaleVariation;
 //	private float newRangeVariation;
 //	private float newAudioPitchVariation;
 
-	[HideInInspector] public bool detonate = false;
+	[HideInInspector] public bool detonate = true;
 	private Vector3 initScale;
 	private float startTime;
 	private float timeFromBegin;
-	private float deformOffset;
+//	private float deformOffset;
 	private float vertPos;
 	private float r;
 	private float g;
@@ -179,7 +179,7 @@ public class VolumetricExplosion : MonoBehaviour {
 
 	void AdjustDisplacement() {
 		timeFromBegin = Time.time - startTime;
-		vertPos = (deformOffset + timeFromBegin) / deformSpeed;
+		vertPos = (newVariation + timeFromBegin) / duration;
 		r = Mathf.Sin((vertPos) * (2 * Mathf.PI)) * 0.5f + 0.25f;
 		g = Mathf.Sin((vertPos + 0.33333333f) * 2 * Mathf.PI) * 0.5f + 0.25f;
 		b = Mathf.Sin((vertPos + 0.66666667f) * 2 * Mathf.PI) * 0.5f + 0.25f;
@@ -204,15 +204,15 @@ public class VolumetricExplosion : MonoBehaviour {
 
 	void AdjustScale() {
 		scaleFactor = scale.Evaluate(timeFromBegin / newExplosionDuration);
-		scaleFactor = scaleFactor + (scaleFactor * newScaleVariation);
+		scaleFactor = scaleFactor + (scaleFactor * newVariation);
 		transform.localScale = initScale * scaleFactor;
 	}
 
 	void AdjustClip() {
-		beginRange = minRange.Evaluate(timeFromBegin / newExplosionDuration);
-		beginRange = beginRange + (beginRange * newRangeVariation);
+//		beginRange = minRange.Evaluate(timeFromBegin / newExplosionDuration);
+//		beginRange = beginRange + (beginRange * newRangeVariation);
 		endRange = maxRange.Evaluate(timeFromBegin / newExplosionDuration);
-		endRange = endRange + (endRange * newRangeVariation);
+		endRange = endRange + (endRange * newVariation);
 
 		if (beginRange >= 1.0f) {
 			beginRange = 1.0f;
@@ -238,38 +238,39 @@ public class VolumetricExplosion : MonoBehaviour {
 		// Randomize it!
 		// -------------
 
+		// Base random variation
+		newVariation = Random.Range (-variation, variation);
+
+		// Random rotation
 		Vector3 euler = transform.eulerAngles;
 
 		// Y-axis Rotation
 		euler.y = Random.Range (0.0f, 360.0f);
 		transform.eulerAngles = euler;
-
-		// Deformation offset
-		deformOffset = Random.Range (0, 100);
-
+	
 		// Randomize duration
-		newDurationVariation = Random.Range (
-			-durationVariation,
-			durationVariation
-		);
+//		newDurationVariation = Random.Range (
+//			-durationVariation,
+//			durationVariation
+//		);
 
-		newExplosionDuration = explosionDuration + (explosionDuration * newDurationVariation);
+		newExplosionDuration = duration + (duration * newVariation);
 
 		// Randomize scale
-		newScaleVariation = Random.Range (
-			-scaleVariation,
-			scaleVariation
-		);
+//		newScaleVariation = Random.Range (
+//			-scaleVariation,
+//			scaleVariation
+//		);
 
 		// Randomize min/max color range
-		newRangeVariation = Random.Range (
-			-rangeVariation,
-			rangeVariation
-		);
+//		newRangeVariation = Random.Range (
+//			-rangeVariation,
+//			rangeVariation
+//		);
 
 		// Don't forget about the audio!
 		if (playAudio && _audioClip) {
-			_audioClip.pitch = 1 + (1 * -newDurationVariation);
+			_audioClip.pitch = 1 + (1 * -newVariation);
 			_audioClip.Play ();
 		}
 
