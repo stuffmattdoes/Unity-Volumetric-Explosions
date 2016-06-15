@@ -4,19 +4,19 @@ using System.Collections;
 public class VolumetricExplosion : MonoBehaviour {
 
 	[Header("Main Explosion")]
-	[Range(0.1f, 5.0f)] public float deformSpeed = 1;
-	public float explosionDuration = 1;
-	[Range (0.0f, 1.0f)] public float durationVariation = 0.1f;
+	[Range(0.1f, 5.0f)] public float duration = 1;
 	[Range (0.0f, 1.0f)] public float variation = 0.1f;
+//	[Range(0.1f, 5.0f)] public float deformSpeed = 1;
+//	[Range (0.0f, 1.0f)] public float durationVariation = 0.1f;
 	[Range(0.0f, 1.0f)] public float riseSpeed;
 	public AnimationCurve scale = AnimationCurve.EaseInOut(0, 0.2f, 1, 2);
-	[Range (0.0f, 1.0f)] public float scaleVariation = 0.1f;
+//	[Range (0.0f, 1.0f)] public float scaleVariation = 0.1f;
 	public AnimationCurve displacement = AnimationCurve.Linear(0, 0, 1, 0.5f);
-	[Range (0.0f, 1.0f)] public float displacementVariation = 0.1f;
+//	[Range (0.0f, 1.0f)] public float displacementVariation = 0.1f;
 	public AnimationCurve displacementTileY = AnimationCurve.Linear(0, 0, 1, 1);
 	public AnimationCurve minRange = AnimationCurve.Linear(0, 0, 1, 0.5f);
 	public AnimationCurve maxRange = AnimationCurve.Linear(0, 0.2f, 1, 1);
-	[Range (0.0f, 1.0f)] public float rangeVariation = 0.1f;
+//	[Range (0.0f, 1.0f)] public float rangeVariation = 0.1f;
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
 
 	[Header("Sub FX")]
@@ -42,13 +42,13 @@ public class VolumetricExplosion : MonoBehaviour {
 	public bool debugPos = false;
 	public bool loop = false;
 
-	private float newVariation;
+//	private float newVariation;
 
-	private float newDurationVariation;
-	private float newExplosionDuration;
-	private float newScaleVariation;
-	private float newRangeVariation;
-	private float newAudioPitchVariation;
+//	private float newDurationVariation;
+//	private float newExplosionDuration;
+//	private float newScaleVariation;
+//	private float newRangeVariation;
+//	private float newAudioPitchVariation;
 
 	[HideInInspector] public bool detonate = false;
 	private Vector3 initScale;
