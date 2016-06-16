@@ -16,7 +16,7 @@ public class VolumetricExplosion : MonoBehaviour {
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
 	public float killTime;
 
-	[Header("Sub FX")]
+	[Header("FX")]
 	public bool playAudio = false;
 	public bool createLighting = false;
 	public bool createSparks = false;
@@ -26,15 +26,19 @@ public class VolumetricExplosion : MonoBehaviour {
 	public bool createShockwave = false;
 	public bool createHeatDistortion = false;
 	public bool applyForce = false;
+	public GameObject lightingPrefab;
 	public GameObject sparksPrefab;
 	public GameObject flaresPrefab;
 	public GameObject smokeTrailPrefab;
 	public GameObject shockwavePrefab;
 	public GameObject heatDistortionPrefab;
 
-	[Header("Lighting")]
-	public GameObject lightingPrefab;
+	[Header("FX Settings")]
 	public AnimationCurve lightIntensity = AnimationCurve.EaseInOut(0, 1.0f, 1, 0);
+	public int minSmokeTrails;
+	public int maxSmokeTrails;
+	[Range(0.1f, 10.0f)] public float radius = 5.0f;
+	[Range(1, 10)] public int power = 10;
 
 	[Header("Debugging")]
 	public bool debugPos = false;
@@ -65,13 +69,12 @@ public class VolumetricExplosion : MonoBehaviour {
 	private ParticleSystem _sparks;
 	private ParticleSystem _flares;
 	private GameObject _smokeTrail;
-	public List<GameObject> _smokeTrailsGroup;
+	[HideInInspector] public List<GameObject> _smokeTrailsGroup;
 	private ParticleSystem _shockwave;
 	private ParticleSystem _heatDistortion;
 
 	void Start () {
 		thisMat = GetComponent<Renderer> ().material;
-
 
 		// ---------------
 		// Initiate our FX
@@ -112,7 +115,7 @@ public class VolumetricExplosion : MonoBehaviour {
 			GameObject smokeTrailsGroup = new GameObject ("Smoke Trails");
 			smokeTrailsGroup.transform.parent = gameObject.transform;
 
-			for (int i = 0; i < 6; i++) {
+			for (int i = 0; i < maxSmokeTrails; i++) {
 				GameObject _smokeTrailPrefab = (GameObject)Instantiate (smokeTrailPrefab, transform.position, Quaternion.identity);
 				_smokeTrailPrefab.transform.parent = gameObject.transform;
 				_smokeTrail = _smokeTrailPrefab.gameObject;
@@ -235,9 +238,14 @@ public class VolumetricExplosion : MonoBehaviour {
 			_heatDistortion.Play ();
 		}
 
+		if (applyForce) {
+			ExplosionForce ();
+		}
+
 		startTime = Time.time;
 		timeFromStart = Time.time - startTime;
 		detonate = false;
+
 	}
 
 	void AdjustPosition() {
@@ -307,13 +315,28 @@ public class VolumetricExplosion : MonoBehaviour {
 		_lighting.intensity = lightIntensity.Evaluate(timeFromStart / newExplosionDuration);
 	}
 
+	void ExplosionForce() {
+		Vector3 explosionPos = transform.position;
+
+		Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
+		foreach (Collider hit in colliders) {
+			Rigidbody rb = hit.GetComponent<Rigidbody>();
+			Debug.Log ("Collider!");
+
+			if (rb != null) {
+				rb.AddExplosionForce (power * 100, explosionPos, radius, 1.5f);
+			}
+
+		}
+	}
+
 	void LaunchSmokeTrails() {
 		Rigidbody smokeTrailRB;
 		ParticleSystem particles;
 		Vector3 randomDir;
 		float mult = 10;
-		int smokeTrailCount = Random.Range (2, _smokeTrailsGroup.Count);
-		float explosionBias = 20.0f;
+		int smokeTrailCount = Random.Range (minSmokeTrails, _smokeTrailsGroup.Count);
+		float explosionBias = 30.0f;
 
 		// Iterate through array of smoke trails & apply forces
 		for (int i = 0; i < smokeTrailCount; i++) {

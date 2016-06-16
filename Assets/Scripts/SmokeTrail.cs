@@ -21,7 +21,6 @@ public class SmokeTrail : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		initScale = transform.localScale;
-		Debug.Log (transform.localScale);
 	}
 
 	void OnEnable() {
