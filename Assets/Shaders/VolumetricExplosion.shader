@@ -7,7 +7,7 @@
         _Displacement ("Displacement", Range(0, 1.0)) = 0.1
         _ChannelFactor ("ChannelFactor (r,g,b)", Vector) = (1.0, 0, 0)
         _Range ("Range", Vector) = (0, 0.5, 0)
-        _ClipRange ("Clip Value", Range(0, 0.1)) = 0.8
+        _ClipRange ("Clip Value", Range(0, 1)) = 0.8
     }
  
     SubShader 
