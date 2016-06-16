@@ -45,7 +45,7 @@ public class VolumetricExplosion : MonoBehaviour {
 	private float newExplosionDuration;
 	private Vector3 initScale;
 	private float startTime;
-	private float timeFromBegin;
+	private float timeFromStart;
 	private float vertPos;
 	private float r;
 	private float g;
@@ -88,7 +88,7 @@ public class VolumetricExplosion : MonoBehaviour {
 			_audioClip = GetComponent<AudioSource> ();
 		}
 
-		// SPparks
+		// Sparks
 		if (createSparks && sparksPrefab) {
 			GameObject _sparksPrefab = (GameObject)Instantiate (sparksPrefab, transform.position, Quaternion.identity);
 			_sparksPrefab.transform.parent = gameObject.transform;
@@ -147,7 +147,7 @@ public class VolumetricExplosion : MonoBehaviour {
 
 	void Update () {
 
-		if (!detonate && timeFromBegin < newExplosionDuration || loop) {
+		if (!detonate && timeFromStart < newExplosionDuration || loop) {
 			Detonation ();
 		}
 
@@ -227,7 +227,6 @@ public class VolumetricExplosion : MonoBehaviour {
 
 		// Shockwave
 		if (createShockwave && _shockwave) {
-			Debug.Log ("Shockwave");
 			_shockwave.Play ();
 		}
 
@@ -237,7 +236,7 @@ public class VolumetricExplosion : MonoBehaviour {
 		}
 
 		startTime = Time.time;
-		timeFromBegin = Time.time - startTime;
+		timeFromStart = Time.time - startTime;
 		detonate = false;
 	}
 
@@ -256,19 +255,19 @@ public class VolumetricExplosion : MonoBehaviour {
 	}
 
 	void AdjustDisplacement() {
-		timeFromBegin = Time.time - startTime;
-		vertPos = (newVariation + timeFromBegin) / deformSpeed;
+		timeFromStart = Time.time - startTime;
+		vertPos = (newVariation + timeFromStart) / deformSpeed;
 		r = Mathf.Sin((vertPos) * (2 * Mathf.PI)) * 0.5f + 0.25f;
 		g = Mathf.Sin((vertPos + 0.33333333f) * 2 * Mathf.PI) * 0.5f + 0.25f;
 		b = Mathf.Sin((vertPos + 0.66666667f) * 2 * Mathf.PI) * 0.5f + 0.25f;
 
 		// Additionally - do some overall extrusion
-		dispVal = displacement.Evaluate(timeFromBegin / newExplosionDuration);
+		dispVal = displacement.Evaluate(timeFromStart / newExplosionDuration);
 		thisMat.SetFloat("_Displacement", dispVal);
 	}
 
 	void AdjustDisplacementMap() {
-		dispOffsetY = displacementOffsetY.Evaluate(timeFromBegin / newExplosionDuration);
+		dispOffsetY = displacementOffsetY.Evaluate(timeFromStart / newExplosionDuration);
 		thisMat.SetTextureOffset("_DispTex", new Vector2(0, dispOffsetY));
 
 		// Ensure that their sum = 1)
@@ -281,13 +280,13 @@ public class VolumetricExplosion : MonoBehaviour {
 	}
 
 	void AdjustScale() {
-		scaleFactor = scale.Evaluate(timeFromBegin / newExplosionDuration);
+		scaleFactor = scale.Evaluate(timeFromStart / newExplosionDuration);
 		scaleFactor = scaleFactor + (scaleFactor * newVariation);
 		transform.localScale = initScale * scaleFactor;
 	}
 
 	void AdjustClip() {
-		endRange = maxRange.Evaluate(timeFromBegin / newExplosionDuration);
+		endRange = maxRange.Evaluate(timeFromStart / newExplosionDuration);
 		endRange = endRange + (endRange * newVariation);
 
 		if (beginRange >= 1.0f) {
@@ -300,28 +299,40 @@ public class VolumetricExplosion : MonoBehaviour {
 
 		thisMat.SetVector("_Range", new Vector4(beginRange, endRange, 0, 0));
 
-		clipVal = clip.Evaluate(timeFromBegin / newExplosionDuration);
+		clipVal = clip.Evaluate(timeFromStart / newExplosionDuration);
 		thisMat.SetFloat("_ClipRange", clipVal);
 	}
 
 	void AdjustLighting() {
-		_lighting.intensity = lightIntensity.Evaluate(timeFromBegin / newExplosionDuration);
+		_lighting.intensity = lightIntensity.Evaluate(timeFromStart / newExplosionDuration);
 	}
 
 	void LaunchSmokeTrails() {
-		Debug.Log ("Launch smoke trails!");
+		Rigidbody smokeTrailRB;
+		ParticleSystem particles;
 		Vector3 randomDir;
 		float mult = 10;
+		int smokeTrailCount = Random.Range (2, _smokeTrailsGroup.Count);
+		float explosionBias = 20.0f;
 
-		for (int i = 0; i < _smokeTrailsGroup.Count; i++) {
+		// Iterate through array of smoke trails & apply forces
+		for (int i = 0; i < smokeTrailCount; i++) {
+			_smokeTrailsGroup [i].SetActive (true);
+			particles = _smokeTrailsGroup [i].GetComponent<ParticleSystem> ();
+			particles.Clear ();
+
+			// Zero out any existing velocity
+			smokeTrailRB = _smokeTrailsGroup[i].GetComponent<Rigidbody>();
+			smokeTrailRB.velocity = Vector3.zero;
+
 			randomDir = new Vector3 (
-				mult * Random.Range(-10.0f, 10.0f),
-				mult * Random.Range(-1.0f, 10.0f),
-				mult * Random.Range(-10.0f, 10.0f)
+				mult * Random.Range(-explosionBias, explosionBias),
+				mult * Random.Range(-1.0f, explosionBias),
+				mult * Random.Range(-explosionBias, explosionBias)
 			);
 
-			_smokeTrailsGroup [i].GetComponent<Rigidbody> ().AddForce (randomDir);
-			Debug.Log (randomDir);
+			_smokeTrailsGroup [i].transform.position = transform.position;
+			smokeTrailRB.AddForce (randomDir);
 		}
 	}
 
