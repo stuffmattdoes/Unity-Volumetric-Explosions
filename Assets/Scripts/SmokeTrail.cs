@@ -8,6 +8,7 @@ public class SmokeTrail : MonoBehaviour {
 	[Range (0.1f, 1.0f)] public float variation = 1.0f;
 	public AnimationCurve particleScale = AnimationCurve.EaseInOut (0, 1.0f, 1.0f, 0);
 	public AnimationCurve particleFade = AnimationCurve.Linear (0, 1.0f, 1.0f, 0);
+	public LayerMask collideWith;
 
 	private float newDuration;
 	private float newVariation;
@@ -16,12 +17,12 @@ public class SmokeTrail : MonoBehaviour {
 	private float scaleFactor;
 	private ParticleSystem particles;
 	private Color _particleColor;
-	private Vector3 initScale;
+//	private Vector3 initScale;
 
 	// Use this for initialization
-	void Start () {
-		initScale = transform.localScale;
-	}
+//	void Start () {
+//		initScale = transform.localScale;
+//	}
 
 	void OnEnable() {
 //		transform.localScale = initScale;
@@ -61,12 +62,23 @@ public class SmokeTrail : MonoBehaviour {
 			particles.startColor.r,
 			particles.startColor.g,
 			particles.startColor.b,
-			particleFade.Evaluate (timeFromStart / (newDuration * 0.75f))
+			particleFade.Evaluate (timeFromStart / newDuration)
 		);
 
 		// Decrease scale of particle system over time
-		scaleFactor = particleScale.Evaluate (timeFromStart / newDuration);
+//		scaleFactor = particleScale.Evaluate (timeFromStart / newDuration);
 //		transform.localScale = initScale * scaleFactor;
 
 	}
+
+//	void OnCollisionEnter (Collision col) {
+//
+//		Debug.Log ("Collide with: " + col.collider);
+//
+//		if (col.gameObject.layer == collideWith.value) {
+//			Debug.Log ("Hit the ground!");
+//		}
+//
+//		Physics.IgnoreCollision (col.collider, GetComponent<Collider>());
+//	}
 }

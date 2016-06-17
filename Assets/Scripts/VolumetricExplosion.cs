@@ -148,6 +148,12 @@ public class VolumetricExplosion : MonoBehaviour {
 		);
 	}
 
+	void OnEnable() {
+		if (killTime > 0) {
+			StartCoroutine (KillCountdown ());
+		}
+	}
+
 	void Update () {
 
 		if (!detonate && timeFromStart < newExplosionDuration || loop) {
@@ -160,6 +166,11 @@ public class VolumetricExplosion : MonoBehaviour {
 			}
 			Reset ();
 		}
+	}
+
+	public IEnumerator KillCountdown() {
+		yield return new WaitForSeconds (killTime);
+		gameObject.SetActive (false);
 	}
 
 	void Detonation () {
@@ -321,7 +332,6 @@ public class VolumetricExplosion : MonoBehaviour {
 		Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
 		foreach (Collider hit in colliders) {
 			Rigidbody rb = hit.GetComponent<Rigidbody>();
-			Debug.Log ("Collider!");
 
 			if (rb != null) {
 				rb.AddExplosionForce (power * 100, explosionPos, radius, 1.5f);
@@ -350,7 +360,7 @@ public class VolumetricExplosion : MonoBehaviour {
 
 			randomDir = new Vector3 (
 				mult * Random.Range(-explosionBias, explosionBias),
-				mult * Random.Range(-1.0f, explosionBias),
+				mult * Random.Range(-1.0f, explosionBias + (explosionBias * 0.5f)),
 				mult * Random.Range(-explosionBias, explosionBias)
 			);
 
