@@ -17,15 +17,8 @@ public class SmokeTrail : MonoBehaviour {
 	private float scaleFactor;
 	private ParticleSystem particles;
 	private Color _particleColor;
-//	private Vector3 initScale;
-
-	// Use this for initialization
-//	void Start () {
-//		initScale = transform.localScale;
-//	}
 
 	void OnEnable() {
-//		transform.localScale = initScale;
 		particles = gameObject.GetComponent<ParticleSystem> ();
 		Reset ();
 	}
@@ -64,21 +57,6 @@ public class SmokeTrail : MonoBehaviour {
 			particles.startColor.b,
 			particleFade.Evaluate (timeFromStart / newDuration)
 		);
-
-		// Decrease scale of particle system over time
-//		scaleFactor = particleScale.Evaluate (timeFromStart / newDuration);
-//		transform.localScale = initScale * scaleFactor;
-
 	}
-
-//	void OnCollisionEnter (Collision col) {
-//
-//		Debug.Log ("Collide with: " + col.collider);
-//
-//		if (col.gameObject.layer == collideWith.value) {
-//			Debug.Log ("Hit the ground!");
-//		}
-//
-//		Physics.IgnoreCollision (col.collider, GetComponent<Collider>());
-//	}
+		
 }

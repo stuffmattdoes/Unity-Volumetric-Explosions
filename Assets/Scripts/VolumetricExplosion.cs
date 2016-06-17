@@ -360,7 +360,7 @@ public class VolumetricExplosion : MonoBehaviour {
 
 			randomDir = new Vector3 (
 				mult * Random.Range(-explosionBias, explosionBias),
-				mult * Random.Range(-1.0f, explosionBias + (explosionBias * 0.5f)),
+				mult * Random.Range(-explosionBias, explosionBias),
 				mult * Random.Range(-explosionBias, explosionBias)
 			);
 
