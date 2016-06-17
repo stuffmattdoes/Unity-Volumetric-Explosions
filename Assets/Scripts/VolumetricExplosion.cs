@@ -16,29 +16,50 @@ public class VolumetricExplosion : MonoBehaviour {
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
 	public float killTime;
 
-	[Header("FX")]
+	[Header("Audio")]
 	public bool playAudio = false;
-	public bool createLighting = false;
-	public bool createSparks = false;
-	public bool createFlares = false;
-	public bool createSmoke = false;
-	public bool createSmokeTrails = false;
-	public bool createShockwave = false;
-	public bool createHeatDistortion = false;
-	public bool applyForce = false;
-	public GameObject lightingPrefab;
-	public GameObject sparksPrefab;
-	public GameObject flaresPrefab;
-	public GameObject smokeTrailPrefab;
-	public GameObject shockwavePrefab;
-	public GameObject heatDistortionPrefab;
 
-	[Header("FX Settings")]
-	public AnimationCurve lightIntensity = AnimationCurve.EaseInOut(0, 1.0f, 1, 0);
-	public int minSmokeTrails;
-	public int maxSmokeTrails;
+	[Header("Explosive Force")]
+	public bool applyForce = false;
 	[Range(0.1f, 10.0f)] public float radius = 5.0f;
 	[Range(1, 10)] public int power = 10;
+
+	[Header("Flares")]
+	public bool createFlares = false;
+	public GameObject flaresPrefab;
+
+	[Header("Heat Distortion")]
+	public bool createHeatDistortion = false;
+	public GameObject heatDistortionPrefab;
+
+	[Header("Lighting")]
+	public bool createLighting = false;
+	public GameObject lightingPrefab;
+	public AnimationCurve lightIntensity = AnimationCurve.EaseInOut(0, 1.0f, 1, 0);
+
+	[Header("Shockwave")]
+	public bool createShockwave = false;
+	public GameObject shockwavePrefab;
+
+//	[Header("Smoke")]
+//	public bool createSmoke = false;
+
+	[Header("Smoke Trails")]
+	public bool createSmokeTrails = false;
+	public GameObject smokeTrailPrefab;
+	public int minSmokeTrails;
+	public int maxSmokeTrails;
+	[Range(0, 10)] public int explosionBias;
+
+	[Header("Sparks")]
+	public bool createSparks = false;
+	public GameObject sparksPrefab;
+
+	[Header("Sub Explosions")]
+	public bool createSubExplosinos = false;
+	public GameObject subExplosionPrefab;
+	[Range(1, 6)] public float subExplosions = 2;
+	[Range(0.1f, 1)] public float subExplosionVariation = 0.2f;
 
 	[Header("Debugging")]
 	public bool debugPos = false;
@@ -331,6 +352,11 @@ public class VolumetricExplosion : MonoBehaviour {
 
 		Collider[] colliders = Physics.OverlapSphere(explosionPos, radius);
 		foreach (Collider hit in colliders) {
+
+			if (hit.transform.IsChildOf (gameObject.transform)) {
+				continue;
+			}
+				
 			Rigidbody rb = hit.GetComponent<Rigidbody>();
 
 			if (rb != null) {
@@ -346,7 +372,6 @@ public class VolumetricExplosion : MonoBehaviour {
 		Vector3 randomDir;
 		float mult = 10;
 		int smokeTrailCount = Random.Range (minSmokeTrails, _smokeTrailsGroup.Count);
-		float explosionBias = 30.0f;
 
 		// Iterate through array of smoke trails & apply forces
 		for (int i = 0; i < smokeTrailCount; i++) {
@@ -359,9 +384,9 @@ public class VolumetricExplosion : MonoBehaviour {
 			smokeTrailRB.velocity = Vector3.zero;
 
 			randomDir = new Vector3 (
-				mult * Random.Range(-explosionBias, explosionBias),
-				mult * Random.Range(-explosionBias, explosionBias),
-				mult * Random.Range(-explosionBias, explosionBias)
+				mult * Random.Range(-explosionBias * 5, explosionBias * 5),
+				mult * Random.Range(-explosionBias * 5, explosionBias * 10),
+				mult * Random.Range(-explosionBias * 5, explosionBias * 5)
 			);
 
 			_smokeTrailsGroup [i].transform.position = transform.position;
