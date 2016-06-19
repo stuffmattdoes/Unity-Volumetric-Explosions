@@ -16,6 +16,8 @@ public class VolumetricExplosion : MonoBehaviour {
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
 	public float killTime;
 
+	public AnimationCurve parkerLOL = AnimationCurve.Linear(0, 0, 1, 1);
+
 	[Header("Audio")]
 	public bool playAudio = false;
 
