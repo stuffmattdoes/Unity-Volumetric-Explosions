@@ -17,7 +17,9 @@
         LOD 300
  
         CGPROGRAM
-        #pragma surface surf Lambert vertex:disp nolightmap
+        #pragma vertex vert
+        #pragma surface surf Lambert
+//        #pragma nolightmap
         #pragma target 3.0
         #pragma glsl
  
@@ -32,7 +34,7 @@
             float2 uv_DispTex;
         };
  
-        void disp (inout appdata_full v)
+        void vert (inout appdata_full v)
         {
             float3 dcolor = tex2Dlod (_DispTex, float4(v.texcoord.xy,0,0));
             float d = (dcolor.r * _ChannelFactor.r + dcolor.g * _ChannelFactor.g + dcolor.b * _ChannelFactor.b);
