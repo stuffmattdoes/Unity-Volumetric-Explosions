@@ -3,12 +3,14 @@ using System.Collections;
 
 public class SceneManager : MonoBehaviour {
 
-	public GameObject explosion;
+	public int explSelect;
+	public GameObject[] explosions;
 	VolumetricExplosion volExp;
 
 	// Use this for initialization
 	void Start () {
-		volExp = explosion.GetComponent<VolumetricExplosion> ();
+
+		volExp = explosions[explSelect].GetComponent<VolumetricExplosion> ();
 	}
 	
 	// Update is called once per frame
@@ -34,7 +36,7 @@ public class SceneManager : MonoBehaviour {
 		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 
 		if (Physics.Raycast (ray, out hit, 100.0f)) {
-			GameObject newExplosion = (GameObject)Instantiate (explosion, hit.point, Quaternion.identity);
+			GameObject newExplosion = (GameObject)Instantiate (explosions[explSelect], hit.point, Quaternion.identity);
 			newExplosion.GetComponent<VolumetricExplosion> ().detonate = true;
 
 		}

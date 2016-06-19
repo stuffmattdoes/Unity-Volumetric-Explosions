@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 
 public class VolumetricExplosion : MonoBehaviour {
 
@@ -15,8 +15,6 @@ public class VolumetricExplosion : MonoBehaviour {
 	public AnimationCurve maxRange = AnimationCurve.Linear(0, 0.2f, 1, 1);
 	public AnimationCurve clip = AnimationCurve.Linear(0.5f, 0.7f, 1, 0.5f);
 	public float killTime;
-
-	public AnimationCurve parkerLOL = AnimationCurve.Linear(0, 0, 1, 1);
 
 	[Header("Audio")]
 	public bool playAudio = false;
@@ -49,8 +47,8 @@ public class VolumetricExplosion : MonoBehaviour {
 	[Header("Smoke Trails")]
 	public bool createSmokeTrails = false;
 	public GameObject smokeTrailPrefab;
-	public int minSmokeTrails;
-	public int maxSmokeTrails;
+	[Range(1, 6)] public int minSmokeTrails;
+	[Range(1, 6)] public int maxSmokeTrails;
 	[Range(0, 10)] public int explosionBias;
 
 	[Header("Sparks")]
@@ -60,11 +58,10 @@ public class VolumetricExplosion : MonoBehaviour {
 	[Header("Sub Explosions")]
 	public bool createSubExplosinos = false;
 	public GameObject subExplosionPrefab;
-	[Range(1, 6)] public float subExplosions = 2;
-	[Range(0.1f, 1)] public float subExplosionVariation = 0.2f;
+	[Range(1, 6)] public int minSubExplosions = 1;
+	[Range(1, 6)] public int maxSubExplosions = 3;
 
 	[Header("Debugging")]
-	public bool debugPos = false;
 	public bool loop = false;
 
 	[HideInInspector] public bool detonate = true;
@@ -84,16 +81,17 @@ public class VolumetricExplosion : MonoBehaviour {
 	private float dispVal;
 	private float dispOffsetY;
 	private float clipVal;
-	private Vector3 thisPos;
-	private Vector3 startPos;
 	private Material thisMat;
+
 	private Light _lighting;
 	private AudioSource _audioClip;
 	private ParticleSystem _sparks;
 	private ParticleSystem _flares;
 	private GameObject _smokeTrail;
-	[HideInInspector] public List<GameObject> _smokeTrailsGroup;
+	private GameObject[] _smokeTrailsGroup;
 	private ParticleSystem _shockwave;
+	private GameObject _subExplosion;
+	private GameObject[] _subExplosionsGroup;
 	private ParticleSystem _heatDistortion;
 
 	void Start () {
@@ -103,23 +101,18 @@ public class VolumetricExplosion : MonoBehaviour {
 		// Initiate our FX
 		// ---------------
 
-		if (createLighting) {
-			GameObject _lightingPrefab = (GameObject)Instantiate (lightingPrefab, transform.position, Quaternion.identity);
-			_lightingPrefab.transform.parent = gameObject.transform;
-			_lighting = _lightingPrefab.GetComponent<Light> ();
-		}
 
 		// Audio
 		if (playAudio) {
 			_audioClip = GetComponent<AudioSource> ();
 		}
 
-		// Sparks
-		if (createSparks && sparksPrefab) {
-			GameObject _sparksPrefab = (GameObject)Instantiate (sparksPrefab, transform.position, Quaternion.identity);
-			_sparksPrefab.transform.parent = gameObject.transform;
-			_sparks = _sparksPrefab.GetComponent<ParticleSystem> ();
+		if (createLighting && lightingPrefab) {
+			GameObject _lightingPrefab = (GameObject)Instantiate (lightingPrefab, transform.position, Quaternion.identity);
+			_lightingPrefab.transform.parent = gameObject.transform;
+			_lighting = _lightingPrefab.GetComponent<Light> ();
 		}
+
 
 		// Flares
 		if (createFlares && flaresPrefab) {
@@ -133,18 +126,11 @@ public class VolumetricExplosion : MonoBehaviour {
 			_flares = _flaresPrefab.GetComponent<ParticleSystem> ();
 		}
 
-		// Smoke trails
-		if (createSmokeTrails && smokeTrailPrefab) {
-			GameObject smokeTrailsGroup = new GameObject ("Smoke Trails");
-			smokeTrailsGroup.transform.parent = gameObject.transform;
-
-			for (int i = 0; i < maxSmokeTrails; i++) {
-				GameObject _smokeTrailPrefab = (GameObject)Instantiate (smokeTrailPrefab, transform.position, Quaternion.identity);
-				_smokeTrailPrefab.transform.parent = gameObject.transform;
-				_smokeTrail = _smokeTrailPrefab.gameObject;
-				_smokeTrail.transform.parent = smokeTrailsGroup.transform;
-				_smokeTrailsGroup.Add (_smokeTrail);
-			}
+		// Heat distortion
+		if (createHeatDistortion && heatDistortionPrefab) {
+			GameObject _heatDistortionPrefab = (GameObject)Instantiate (heatDistortionPrefab, transform.position, Quaternion.identity);
+			_heatDistortionPrefab.transform.parent = gameObject.transform;
+			_heatDistortion = _heatDistortionPrefab.GetComponent<ParticleSystem> ();
 		}
 
 		// Shockwave
@@ -154,21 +140,45 @@ public class VolumetricExplosion : MonoBehaviour {
 			_shockwave = _shockwavePrefab.GetComponent<ParticleSystem> ();
 		}
 
-		// Heat distortion
-		if (createHeatDistortion && heatDistortionPrefab) {
-			GameObject _heatDistortionPrefab = (GameObject)Instantiate (heatDistortionPrefab, transform.position, Quaternion.identity);
-			_heatDistortionPrefab.transform.parent = gameObject.transform;
-			_heatDistortion = _heatDistortionPrefab.GetComponent<ParticleSystem> ();
+		// Smoke trails
+		if (createSmokeTrails && smokeTrailPrefab) {
+			GameObject smokeTrailsGroup = new GameObject ("Smoke Trails");
+			smokeTrailsGroup.transform.parent = gameObject.transform;
+			_smokeTrailsGroup = new GameObject[maxSmokeTrails];
+			
+			for (int i = 0; i < maxSmokeTrails; i++) {
+				GameObject _smokeTrailPrefab = (GameObject)Instantiate (smokeTrailPrefab, transform.position, Quaternion.identity);
+				_smokeTrailPrefab.transform.parent = gameObject.transform;
+				_smokeTrail = _smokeTrailPrefab.gameObject;
+				_smokeTrail.transform.parent = smokeTrailsGroup.transform;
+				_smokeTrailsGroup[i] = _smokeTrail;
+			}
 		}
+
+		// Sparks
+		if (createSparks && sparksPrefab) {
+			GameObject _sparksPrefab = (GameObject)Instantiate (sparksPrefab, transform.position, Quaternion.identity);
+			_sparksPrefab.transform.parent = gameObject.transform;
+			_sparks = _sparksPrefab.GetComponent<ParticleSystem> ();
+		}
+
+		// Sub explosions
+		if (createSubExplosinos && subExplosionPrefab) {
+			GameObject subExplosionsGroup = new GameObject ("Sub Explosions");
+			subExplosionsGroup.transform.parent = gameObject.transform;
+			_subExplosionsGroup = new GameObject[maxSubExplosions];
+
+			for (int i = 0; i < maxSubExplosions; i++) {
+				GameObject _subExplosionsPrefab = (GameObject)Instantiate (subExplosionPrefab, transform.position, Quaternion.identity);
+				_subExplosion = _subExplosionsPrefab.gameObject;
+				_subExplosionsPrefab.transform.parent = subExplosionsGroup.transform;
+				_subExplosionsGroup [i] = _subExplosion;
+			}
+		}
+
 
 		// Scaling & positioning
 		initScale = transform.localScale;
-
-		startPos = new Vector3 (
-			transform.position.x,
-			transform.position.y,
-			transform.position.z
-		);
 	}
 
 	void OnEnable() {
@@ -184,9 +194,6 @@ public class VolumetricExplosion : MonoBehaviour {
 		}
 
 		if (detonate) {
-			if (debugPos) {
-				transform.position = startPos;
-			}
 			Reset ();
 		}
 	}
@@ -240,31 +247,15 @@ public class VolumetricExplosion : MonoBehaviour {
 		euler.y = Random.Range (0.0f, 360.0f);
 		transform.eulerAngles = euler;
 
-
 		// Don't forget about the audio!
 		if (playAudio && _audioClip) {
 			_audioClip.pitch = 1 + (1 * -newVariation);
 			_audioClip.Play ();
 		}
-
-		// Sparks
-		if (createSparks && _sparks) {
-			_sparks.Play();
-		}
-
+			
 		// Flares
 		if (createFlares && _flares) {
 			_flares.Play();
-		}
-
-		// Smoke Trails
-		if (createSmokeTrails && _smokeTrailsGroup.Count > 0) {
-			LaunchSmokeTrails ();
-		}
-
-		// Shockwave
-		if (createShockwave && _shockwave) {
-			_shockwave.Play ();
 		}
 
 		// Heat distortion
@@ -272,9 +263,31 @@ public class VolumetricExplosion : MonoBehaviour {
 			_heatDistortion.Play ();
 		}
 
+		// Shockwave
+		if (createShockwave && _shockwave) {
+			_shockwave.Play ();
+		}
+
+		// Smoke Trails
+		if (createSmokeTrails && _smokeTrailsGroup.Length > 0) {
+			LaunchSmokeTrails ();
+		}
+
+		// Sparks
+		if (createSparks && _sparks) {
+			_sparks.Play();
+		}
+			
+		// Sub explosions
+		if (createSubExplosinos && _subExplosionsGroup.Length > 0) {
+			SubExplosionEmitter ();
+		}
+
+		// Explosive force
 		if (applyForce) {
 			ExplosionForce ();
 		}
+
 
 		startTime = Time.time;
 		timeFromStart = Time.time - startTime;
@@ -283,16 +296,10 @@ public class VolumetricExplosion : MonoBehaviour {
 	}
 
 	void AdjustPosition() {
-		thisPos = new Vector3 (
-			transform.position.x,
-			transform.position.y,
-			transform.position.z
-		);
-
 		transform.position = new Vector3 (
-			thisPos.x,
-			thisPos.y + (riseSpeed * Time.deltaTime),
-			thisPos.z
+			transform.position.x,
+			transform.position.y + (riseSpeed * Time.deltaTime),
+			transform.position.z
 		);
 	}
 
@@ -373,13 +380,10 @@ public class VolumetricExplosion : MonoBehaviour {
 		ParticleSystem particles;
 		Vector3 randomDir;
 		float mult = 10;
-		int smokeTrailCount = Random.Range (minSmokeTrails, _smokeTrailsGroup.Count);
+		int smokeTrailCount = Random.Range (minSmokeTrails, _smokeTrailsGroup.Length + 1);
 
 		// Iterate through array of smoke trails & apply forces
 		for (int i = 0; i < smokeTrailCount; i++) {
-			_smokeTrailsGroup [i].SetActive (true);
-			particles = _smokeTrailsGroup [i].GetComponent<ParticleSystem> ();
-			particles.Clear ();
 
 			// Zero out any existing velocity
 			smokeTrailRB = _smokeTrailsGroup[i].GetComponent<Rigidbody>();
@@ -392,8 +396,32 @@ public class VolumetricExplosion : MonoBehaviour {
 			);
 
 			_smokeTrailsGroup [i].transform.position = transform.position;
+			_smokeTrailsGroup [i].SetActive (true);
+			particles = _smokeTrailsGroup [i].GetComponent<ParticleSystem> ();
+			particles.Clear ();
 			smokeTrailRB.AddForce (randomDir);
 		}
+	}
+
+	void SubExplosionEmitter() {
+		Vector3 randomPos;
+		float posDamp = 0.5f;
+		float randomDel;
+		int subExplosionCount = Random.Range (minSubExplosions, _subExplosionsGroup.Length + 1);
+
+		for (int i = 0; i < subExplosionCount; i++) {
+			randomPos = Random.onUnitSphere;
+			randomDel = Random.Range (0.2f, 0.35f);
+
+			_subExplosionsGroup [i].transform.position = transform.position + randomPos;
+			_subExplosionsGroup [i].gameObject.SetActive (true);
+			StartCoroutine(SubExplosionEmitterDelay(_subExplosionsGroup[i], randomDel));
+		}
+	}
+
+	IEnumerator SubExplosionEmitterDelay(GameObject expl, float delay) {
+		yield return new WaitForSeconds (delay);
+		expl.GetComponent<VolumetricExplosion> ().Reset ();
 	}
 
 }
