@@ -10,3 +10,8 @@ This effect is fairly simple. It consists of a main fireball and multiple smalle
 + The results of the texture lookup is combined with a random value that changes over the lifetime of the explosion. Now the explosion has some animation and life to it, and is no longer boring and motionless.
 + Color modulation is achieved through multiple texture lookups, combining the results of the Noise texture and the gradient texture. This results in the bubbly-looking shape being uniformly colored with the points of furthest displacement one end of the gradient texture, and the points of least displacement on the other end of the gradient texture.
 + Other various effects are achieved through public variables exposed in the accompanying script - such as the change in explosion size over its lifetime, the degree of variation/bumpiness it has, whether it spawns sub-explosions, and so forth.
+
+## ToDo ##
++ Burn marks on neighboring geometry
++ Residual smoke
++ Fireball glow
