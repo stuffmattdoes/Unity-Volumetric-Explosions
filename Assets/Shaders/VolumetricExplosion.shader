@@ -40,7 +40,7 @@
         {
             float3 dcolor = tex2Dlod (_DispTex, float4(v.texcoord.xy,0,0));
             float d = (dcolor.r * _ChannelFactor.r + dcolor.g * _ChannelFactor.g + dcolor.b * _ChannelFactor.b);
-            v.vertex.xyz += v.normal * _Displacement;
+            v.vertex.xyz += v.normal * d * _Displacement;
         }
 
         sampler2D _RampTex;
