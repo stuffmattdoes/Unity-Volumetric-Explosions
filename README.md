@@ -1,6 +1,6 @@
 # Unity Volumetric Explosion Shader
 
-![alt tag](Dec-09-2016 15-10-47.gif)
+![alt tag](./Dec-09-2016 15-10-47.gif)
 
 I've always thought explosion effects were a weak point in action videogames. They're typically either a sprite animation thrown on some billboarded quads, or an underwhelming particle effect. So I figured I'd set out for something a bit different.
 
